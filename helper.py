@@ -1,28 +1,36 @@
+# source activate theano
+# ipython
+# from notebook.auth import passwd
+# passwd()
+
+# paste the password in config file in the password field
+
+# cd ~/
+# openssl req -x509 -nodes -days 365 -newkey rsa:1024 -keyout mykey.key -out mycert.pem
+
+# jupyter notebook
+
 import theano
 import theano.tensor as T
 import numpy as np
 from theano.tensor.shared_randomstreams import RandomStreams
 from theano import function
+from theano import shared
 
 X = T.fmatrix('X')
 
-srng = RandomStreams(seed=234)
-mat = srng.normal((10,10))
-vec = srng.normal((10,1))
+srng = RandomStreams()
+A = srng.normal((10,10))
+b = srng.normal((10,1))
 
-a_chng = function([], mat)
-a_fix = function([], mat, no_default_updates=True)
+sharedA = shared(np.zeros(shape=(10,10), dtype=np.float32))
+sharedb = shared(np.zeros(shape=(10,1), dtype=np.float32))
 
-b_chng = function([], vec)
-b_fix = function([], vec, no_default_updates=True)
-
-A = a_fix()
-b = b_fix()
-
-Z = (X + A) * b
-
-f = function([X], Z)
+Z = T.dot((X + A), b)
+f = function([X], Z, updates=[(sharedA, sharedA + A), (sharedb, sharedb + b)])
 
 x = np.ndarray(shape=(10,10), dtype=np.float32)
 
-f(x)
+p = f(x) 
+q = np.dot((x + sharedA.get_value()), sharedb.get_value()) 
+p - q
