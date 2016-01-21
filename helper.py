@@ -16,3 +16,13 @@ a_fix = function([], mat, no_default_updates=True)
 b_chng = function([], vec)
 b_fix = function([], vec, no_default_updates=True)
 
+A = a_fix()
+b = b_fix()
+
+Z = (X + A) * b
+
+f = function([X], Z)
+
+x = np.ndarray(shape=(10,10), dtype=np.float32)
+
+f(x)
